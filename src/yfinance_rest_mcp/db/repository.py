@@ -1,10 +1,11 @@
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
 from datetime import UTC, datetime
 
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, select
 
+from ..embedder_adapter.openai_compatible_embedder import OpenAICompatibleEmbedder
 from ..models import Article, Instrument, TickerInfo
 from .storage import PostgresStore
 from .tables import Instrument as InstrumentTable, NewsArticle, PriceSnapshot
@@ -66,11 +67,7 @@ def save_price(store: PostgresStore, record: TickerInfo) -> None:
         session.commit()
 
 
-def save_articles(
-    store: PostgresStore,
-    articles: Iterable[Article],
-    embed: Callable[[dict[str, dict]], None] | None = None,
-) -> None:
+def save_articles(store: PostgresStore, articles: Iterable[Article]) -> None:
     fetched_at = datetime.now(UTC)
 
     rows = {
@@ -95,9 +92,7 @@ def save_articles(
     if not rows:
         return
     
-    #callback
-    if embed is not None:
-        embed(rows)
+    OpenAICompatibleEmbedder.get().embed_rows(rows, "title", "description")
 
     statement = insert(NewsArticle).values(list(rows.values()))
     statement = statement.on_conflict_do_nothing(index_elements=[NewsArticle.external_id])

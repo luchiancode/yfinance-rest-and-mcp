@@ -2,7 +2,6 @@ from datetime import UTC, datetime, timedelta
 
 from .models import Article, InstrumentClass, InstrumentPage, TickerInfo
 from .db.repository import save_articles, save_instruments, save_price, stored_articles
-from .embedder_adapter.openai_compatible_embedder import OpenAICompatibleEmbedder
 from .sources.instrument_source import InstrumentSource
 from .sources.search_news_source import SearchNewsSource
 from .sources.source import Source
@@ -72,7 +71,7 @@ def get_ticker_news(
     articles = TickerNewsSource(symbol, limit).get_from_yfinance()
 
     if store is not None:
-        save_articles(store, articles, embed_articles)
+        save_articles(store, articles)
     return articles
 
 
@@ -83,7 +82,7 @@ def search_news(
     articles = SearchNewsSource(query, limit).get_from_yfinance()
 
     if store is not None:
-        save_articles(store, articles, embed_articles)
+        save_articles(store, articles)
 
     return articles
 
@@ -103,28 +102,6 @@ def search_news_by_keywords(
                 articles.append(article)
                 
     return articles[:limit]
-
-
-def embed_articles(rows: dict[str, dict]) -> None:
-    embedder = OpenAICompatibleEmbedder.get()
-    if not embedder.enabled:
-        return
-
-    texts = [
-        "\n".join(part for part in (row["title"], row["description"]) if part)
-        for row in rows.values()
-    ]
-    try:
-        vectors = embedder.embed([text for text in texts if text])
-    except Exception:
-        return
-
-    vector_iter = iter(vectors)
-    for row, text in zip(rows.values(), texts, strict=True):
-        if not text:
-            continue
-        row["embedding"] = next(vector_iter)
-        row["embedding_model"] = embedder.model
 
 
 def stored_news(
