@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 
 from .models import Article, InstrumentClass, InstrumentPage, TickerInfo
 from .db.repository import save_articles, save_instruments, save_price, stored_articles
-from .embedders.openrouter_embedder import OpenRouterEmbedder
+from .embedder_adapter.openai_compatible_embedder import OpenAICompatibleEmbedder
 from .sources.instrument_source import InstrumentSource
 from .sources.search_news_source import SearchNewsSource
 from .sources.source import Source
@@ -106,7 +106,7 @@ def search_news_by_keywords(
 
 
 def embed_articles(rows: dict[str, dict]) -> None:
-    embedder = OpenRouterEmbedder.get()
+    embedder = OpenAICompatibleEmbedder.get()
     if not embedder.enabled:
         return
 

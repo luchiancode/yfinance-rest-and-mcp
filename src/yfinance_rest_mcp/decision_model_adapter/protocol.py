@@ -3,7 +3,7 @@ from typing import Mapping, Protocol, Self
 from typesafe_sdk import JSONContent, Question, SystemOneResponse
 
 
-class DecisionModel(Protocol):
+class DecisionModelAdapter(Protocol):
     model: str
 
     @classmethod

@@ -3,26 +3,36 @@ from typing import Self
 
 import httpx
 
-from .protocol import Embedder
+from .protocol import EmbedderAdapter
 
 
-class LocalOpenAICompatibleEmbedder(Embedder):
-    _instance: "LocalOpenAICompatibleEmbedder | None" = None
+class OpenAICompatibleEmbedder(EmbedderAdapter):
+    _instance: "OpenAICompatibleEmbedder | None" = None
 
     def __init__(self) -> None:
         self.model = os.getenv("EMBEDDING_MODEL") or ""
-        self._base_url = os.getenv("LOCAL_OPENAI_BASE_URL", "http://localhost:1234/v1").rstrip("/")
+        self._base_url = os.getenv("OPENAI_BASE_URL", "http://localhost:1234/v1").rstrip("/")
 
         self._headers = {}
 
         #Optional
-        if api_key := os.getenv("LOCAL_OPENAI_API_KEY"):
+        if api_key := os.getenv("OPENAI_API_KEY"):
             self._headers["Authorization"] = f"Bearer {api_key}"
+
+        #Optional
+        if site_url := os.getenv("YOUR_SITE_URL"):
+            self._headers["HTTP-Referer"] = site_url
+
+        #Optional
+        if site_name := os.getenv("YOUR_SITE_NAME"):
+            self._headers["X-OpenRouter-Title"] = site_name
+
 
     @classmethod
     def get(cls) -> Self:
         if cls._instance is None:
             cls._instance = cls()
+
         return cls._instance
 
     @property

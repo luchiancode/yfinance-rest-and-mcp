@@ -1,7 +1,7 @@
 from typing import Protocol, Self
 
 
-class Embedder(Protocol):
+class EmbedderAdapter(Protocol):
     model: str
 
     @classmethod
