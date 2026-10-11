@@ -1,9 +1,13 @@
 import os
+from pathlib import Path
 from typing import Self
 
 import httpx
+from tokenizers import Tokenizer
 
 from .protocol import EmbedderAdapter
+
+MAX_EMBED_TOKENS = 7 * 1024
 
 
 class OpenAICompatibleEmbedder(EmbedderAdapter):
@@ -11,7 +15,13 @@ class OpenAICompatibleEmbedder(EmbedderAdapter):
 
     def __init__(self) -> None:
         self.model = os.getenv("EMBEDDING_MODEL") or ""
-        self._base_url = os.getenv("OPENAI_BASE_URL", "http://localhost:1234/v1").rstrip("/")
+        self._base_url = os.getenv("OPENAI_BASE_URL", "http://localhost:1234/v1")
+
+        tokenizer_path = Path(__file__).resolve().parent.parent / "tokenizers" / "embeddinggemma-2-tokenizer.json"
+        
+        self._tokenizer = Tokenizer.from_file(str(tokenizer_path))
+        self._tokenizer.no_truncation()
+        self._tokenizer.no_padding()
 
         self._headers = {}
 
@@ -40,20 +50,27 @@ class OpenAICompatibleEmbedder(EmbedderAdapter):
         return bool(self.model)
 
     def embed(self, texts: list[str]) -> list[list[float]]:
-        if not self.enabled:
+        if not self.enabled or not texts:
             return []
+
+        chunks = [self.split_text(text) for text in texts]
+
+        inputs = []
+        for text_chunks in chunks:
+            inputs.extend(text_chunks)
 
         response = httpx.post(
             f"{self._base_url}/embeddings",
-            json={"model": self.model, "input": texts, "encoding_format": "float"},
+            json={"model": self.model, "input": inputs, "encoding_format": "float"},
             headers=self._headers,
             timeout=60,
         )
 
         response.raise_for_status()
-        data = response.json()["data"]
 
-        return [item["embedding"] for item in sorted(data, key=lambda item: item["index"])]
+        embeddings = self.combine_embeddings(response.json()["data"], chunks)
+        return embeddings
+
 
     def embed_rows(self, rows: dict[str, dict], *keys: str) -> None:
         if not self.enabled or not keys:
@@ -74,3 +91,38 @@ class OpenAICompatibleEmbedder(EmbedderAdapter):
                 continue
             row["embedding"] = next(vector_iter)
             row["embedding_model"] = self.model
+
+    def split_text(self, text: str) -> list[str]:
+        encoding = self._tokenizer.encode(text, add_special_tokens=False)
+        token_limit = MAX_EMBED_TOKENS - self._tokenizer.num_special_tokens_to_add(False)
+
+        if len(encoding.ids) <= token_limit:
+            return [text]
+
+        chunks = []
+        start = 0
+        for token_offset in range(token_limit, len(encoding.ids), token_limit):
+            end = encoding.offsets[token_offset][0]
+            if end > start:
+                chunks.append(text[start:end])
+                start = end
+        chunks.append(text[start:])
+
+        return chunks
+
+
+    def combine_embeddings(self, data: list[dict], chunks: list[list[str]]) -> list[list[float]]:
+        data = sorted(data, key=lambda item: item["index"])
+
+        vectors = [item["embedding"] for item in data]
+        result = []
+        offset = 0
+        
+        for group in chunks:
+            batch = vectors[offset:offset + len(group)]
+            result.append(batch[0] if len(batch) == 1 else [
+                sum(values) / len(batch) for values in zip(*batch, strict=True)
+            ])
+            offset += len(group)
+            
+        return result

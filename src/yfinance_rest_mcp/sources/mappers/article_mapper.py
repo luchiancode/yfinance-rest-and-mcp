@@ -12,6 +12,7 @@ class ArticleMapper(Mapper[dict, Article]):
         canonical_url = content.get("canonicalUrl") or {}
         url = canonical_url.get("url") or item.get("link")
         title = content.get("title")
+
         if title is None and url is None:
             return None
 
@@ -24,6 +25,7 @@ class ArticleMapper(Mapper[dict, Article]):
 
         published_at = None
         pub_date = content.get("pubDate")
+
         if isinstance(pub_date, str) and pub_date:
             try:
                 published_at = datetime.fromisoformat(
@@ -31,6 +33,7 @@ class ArticleMapper(Mapper[dict, Article]):
                 )
             except ValueError:
                 published_at = None
+
         if published_at is None:
             timestamp = item.get("providerPublishTime")
             if timestamp is not None:
