@@ -1,6 +1,6 @@
 from datetime import UTC, datetime, timedelta
 
-from ..api.models.fundamentals import InstrumentClass, InstrumentPage, Quote, Ratios
+from ..api.models.fundamentals_models import InstrumentClass, InstrumentPage, Quote, Ratios
 from ..db.fundamentals_repository import save_instruments, save_quote
 from ..db.storage import PostgresStore
 from ..sources.instrument_source import InstrumentSource

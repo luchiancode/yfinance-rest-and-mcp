@@ -1,6 +1,6 @@
 import yfinance as yf
 
-from ..api.models.news import Article
+from ..api.models.news_models import Article
 from .mappers.article_mapper import ArticleMapper
 from .source import Source
 

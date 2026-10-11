@@ -2,8 +2,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Query
 
-from .models.news import Article
-from ..service.news import (
+from .models.news_models import Article
+from ..service.news_service import (
     related_news as _related_news,
     search_news_by_ticker as _search_news_by_ticker,
     search_news as _search_news,

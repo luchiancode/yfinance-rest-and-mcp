@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, select
 
 from ..embedder_adapter.openai_compatible_embedder import OpenAICompatibleEmbedder
-from ..api.models.news import Article
+from ..api.models.news_models import Article
 from .storage import PostgresStore
 from .tables import NewsArticle
 

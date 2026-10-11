@@ -1,6 +1,6 @@
 import yfinance as yf
 
-from ..api.models.fundamentals import Instrument, InstrumentClass, InstrumentPage
+from ..api.models.fundamentals_models import Instrument, InstrumentClass, InstrumentPage
 from ..db.fundamentals_repository import instruments_page
 from ..db.storage import PostgresStore
 from .source import Source

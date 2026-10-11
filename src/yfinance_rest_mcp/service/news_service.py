@@ -1,4 +1,4 @@
-from ..api.models.news import Article
+from ..api.models.news_models import Article
 from ..db.news_repository import related_articles, save_articles, stored_articles
 from ..db.storage import PostgresStore
 from ..embedder_adapter.openai_compatible_embedder import OpenAICompatibleEmbedder

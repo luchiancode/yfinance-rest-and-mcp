@@ -7,9 +7,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.concurrency import run_in_threadpool
 from yfinance.exceptions import YFRateLimitError
 
-from .api.fundamentals import router as fundamentals_router
+from .api.fundamentals_api import router as fundamentals_router
 from .api.handlers import persistence_error_handler, rate_limit_handler, upstream_error_handler
-from .api.news import router as news_router
+from .api.news_api import router as news_router
 from .db.storage import create_store
 
 

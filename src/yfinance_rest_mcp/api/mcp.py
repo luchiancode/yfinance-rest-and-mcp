@@ -11,10 +11,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.concurrency import run_in_threadpool
 from yfinance.exceptions import YFRateLimitError
 
-from .models.fundamentals import Quote
-from .models.news import Article
-from ..service.fundamentals import TickerNotFoundError, get_quotes as _get_quotes
-from ..service.news import (
+from .models.fundamentals_models import Quote
+from .models.news_models import Article
+from ..service.fundamentals_service import TickerNotFoundError, get_quotes as _get_quotes
+from ..service.news_service import (
     search_news_by_ticker as _search_news_by_ticker,
     search_news as _search_news,
     search_news_by_keywords as _search_news_by_keywords,
