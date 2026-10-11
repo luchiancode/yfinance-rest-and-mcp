@@ -1,6 +1,6 @@
 import yfinance as yf
 
-from ..api.models import Ratios
+from ..api.models.fundamentals import Ratios
 from .quote_source import TickerNotFoundError
 from .source import Source
 

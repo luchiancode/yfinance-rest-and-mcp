@@ -5,7 +5,7 @@ from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, select
 
-from ..api.models import Instrument, Quote
+from ..api.models.fundamentals import Instrument, Quote
 from .storage import PostgresStore
 from .tables import Instrument as InstrumentTable, QuoteSnapshot
 

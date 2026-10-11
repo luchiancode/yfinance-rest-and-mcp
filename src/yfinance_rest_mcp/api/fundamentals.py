@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, HTTPException, Query
 
-from .models import InstrumentClass, InstrumentPage, Quote, Ratios
+from .models.fundamentals import InstrumentClass, InstrumentPage, Quote, Ratios
 from ..service.fundamentals import (
     TickerNotFoundError,
     get_instruments as _get_instruments,

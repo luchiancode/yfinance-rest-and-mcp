@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 
-from .models import Article
+from .models.news import Article
 from ..service.news import (
     search_news_by_ticker as _search_news_by_ticker,
     search_news as _search_news,

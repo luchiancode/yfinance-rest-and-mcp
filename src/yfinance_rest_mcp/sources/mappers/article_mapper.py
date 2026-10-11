@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from datetime import UTC, datetime
 
-from ...api.models import Article
+from ...api.models.news import Article
 from .mapper import Mapper
 
 

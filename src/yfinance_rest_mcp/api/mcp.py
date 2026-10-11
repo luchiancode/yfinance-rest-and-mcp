@@ -11,7 +11,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.concurrency import run_in_threadpool
 from yfinance.exceptions import YFRateLimitError
 
-from .models import Article, Quote
+from .models.fundamentals import Quote
+from .models.news import Article
 from ..service.fundamentals import TickerNotFoundError, get_quotes as _get_quotes
 from ..service.news import (
     search_news_by_ticker as _search_news_by_ticker,

@@ -8,6 +8,27 @@ class InstrumentClass(StrEnum):
     ETF = "ETF"
     MUTUALFUND = "MUTUALFUND"
 
+class Instrument(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    symbol: str
+    name: str | None = None
+    asset_class: str = Field(alias="assetClass")
+    aliases: list[str] = Field(default_factory=list)
+    exchange: str | None = Field(default=None, description="Exchange identifier, not a MIC code.")
+    currency: str | None = Field(default=None, description="Currency or price-unit code.")
+    size: float | None = Field(default=None, exclude=True)
+
+
+class InstrumentPage(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    items: list[Instrument]
+    total: int
+    offset: int
+    next_offset: int | None = Field(alias="nextOffset")
+
+
 class Quote(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
@@ -56,35 +77,3 @@ class Ratios(BaseModel):
     return_on_assets: float | None = Field(default=None, alias="returnOnAssets")
     return_on_equity: float | None = Field(default=None, alias="returnOnEquity")
 
-class Instrument(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
-    symbol: str
-    name: str | None = None
-    asset_class: str = Field(alias="assetClass")
-    aliases: list[str] = Field(default_factory=list)
-    exchange: str | None = Field(default=None, description="Exchange identifier, not a MIC code.")
-    currency: str | None = Field(default=None, description="Currency or price-unit code.")
-    size: float | None = Field(default=None, exclude=True)
-
-
-class InstrumentPage(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
-    items: list[Instrument]
-    total: int
-    offset: int
-    next_offset: int | None = Field(alias="nextOffset")
-
-
-class Article(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
-    external_id: str | None = Field(default=None, alias="externalId")
-    title: str | None = None
-    description: str | None = None
-    content: str | None = None
-    url: str | None = None
-    image: str | None = None
-    published_at: datetime | None = Field(default=None, alias="publishedAt")
-    source: str | None = None

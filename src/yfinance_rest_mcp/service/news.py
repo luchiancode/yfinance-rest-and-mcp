@@ -1,4 +1,4 @@
-from ..api.models import Article
+from ..api.models.news import Article
 from ..db.news_repository import save_articles, stored_articles
 from ..db.storage import PostgresStore
 from ..sources.search_news_source import SearchNewsSource
