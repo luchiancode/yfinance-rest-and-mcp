@@ -1,9 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Body, Query
 
 from .models.news import Article
 from ..service.news import (
+    related_news as _related_news,
     search_news_by_ticker as _search_news_by_ticker,
     search_news as _search_news,
     search_news_by_keywords as _search_news_by_keywords,
@@ -35,7 +36,7 @@ def search_news_by_query(
 )
 def search_news_by_keywords(
     store: StoreDep,
-    keywords: Annotated[list_of(string(), max_length=20), Query(description="News search keywords")],
+    keywords: Annotated[list_of(string(max_length=100), max_length=20), Query(description="News search keywords")],
     limit: Annotated[int_range(), Query(description="Maximum number of articles")] = 25,
 ) -> list[Article]:
     return _search_news_by_keywords(keywords, limit=limit, store=store)
@@ -52,6 +53,19 @@ def get_stored_news(
     limit: Annotated[int_range(), Query(description="Maximum number of articles")] = 100,
 ) -> list[Article]:
     return _stored_news(store, offset=offset, limit=limit)
+
+
+@router.post(
+    "/news/related",
+    summary="Get related news articles",
+    description="Embeds the given text and returns stored articles ordered by semantic similarity. "
+)
+def get_related_news(
+    store: StoreDep,
+    text: Annotated[string(max_length=10_000), Body(embed=True, description="Text to find related articles")],
+    limit: Annotated[int_range(), Query(description="Maximum number of articles")] = 10,
+) -> list[Article]:
+    return _related_news(text, store, limit=limit)
 
 
 @router.get(

@@ -1,9 +1,11 @@
 from datetime import UTC, datetime
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Column, DateTime
+from sqlalchemy import Column, DateTime, Index
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, SQLModel
+
+EMBEDDING_DIMENSIONS = 768
 
 
 class Instrument(SQLModel, table=True):
@@ -50,6 +52,14 @@ class QuoteSnapshot(SQLModel, table=True):
 
 class NewsArticle(SQLModel, table=True):
     __tablename__ = "news_articles"
+    __table_args__ = (
+        Index(
+            "idx_news_articles_embedding",
+            "embedding",
+            postgresql_using="hnsw",
+            postgresql_ops={"embedding": "vector_cosine_ops"},
+        ),
+    )
 
     external_id: str = Field(primary_key=True)
     title: str | None = None
@@ -58,7 +68,7 @@ class NewsArticle(SQLModel, table=True):
     image: str | None = None
     published_at: datetime | None = Field(default=None, sa_type=DateTime(timezone=True))
     source: str | None = None
-    embedding: list[float] | None = Field(default=None, sa_column=Column(Vector()))
+    embedding: list[float] | None = Field(default=None, sa_column=Column(Vector(EMBEDDING_DIMENSIONS)))
     embedding_model: str | None = None
     fetched_at: datetime = Field(
         default_factory=lambda: datetime.now(UTC), sa_type=DateTime(timezone=True),

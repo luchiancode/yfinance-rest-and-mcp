@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 from datetime import UTC, datetime
 
+from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, select
 
@@ -48,6 +49,24 @@ def save_articles(store: PostgresStore, articles: Iterable[Article]) -> None:
     with Session(store.engine) as session:
         session.execute(statement)
         session.commit()
+
+
+def related_articles(
+    store: PostgresStore, embedding: list[float], embedding_model: str, limit: int,
+) -> list[NewsArticle]:
+    with Session(store.engine) as session:
+        session.execute(select(func.set_config("hnsw.ef_search", str(max(limit, 40)), True)))
+        distance = NewsArticle.embedding.cosine_distance(embedding)
+        return list(session.exec(
+            select(NewsArticle)
+            .where(
+                NewsArticle.embedding.is_not(None),
+                NewsArticle.embedding_model == embedding_model,
+                distance <= 0.2,
+            )
+            .order_by(distance)
+            .limit(limit)
+        ).all())
 
 
 def stored_articles(store: PostgresStore, offset: int, limit: int) -> list[NewsArticle]:

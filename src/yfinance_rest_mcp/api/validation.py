@@ -17,5 +17,5 @@ def string(min_length: int = 1, max_length: int = 100) -> type[str]:
     return Annotated[str, Field(min_length=min_length, max_length=max_length, pattern=r"^[^<>]*$")]
 
 
-def list_of(item_type: type[T] = string(), min_length: int = 1, max_length: int = 100) -> type[list[T]]:
+def list_of(item_type: type[T], min_length: int = 1, max_length: int = 100) -> type[list[T]]:
     return Annotated[list[item_type], Field(min_length=min_length, max_length=max_length)]

@@ -1,10 +1,12 @@
 from ..api.models.news import Article
-from ..db.news_repository import save_articles, stored_articles
+from ..db.news_repository import related_articles, save_articles, stored_articles
 from ..db.storage import PostgresStore
+from ..embedder_adapter.openai_compatible_embedder import OpenAICompatibleEmbedder
 from ..sources.search_news_source import SearchNewsSource
 from ..sources.ticker_news_source import TickerNewsSource
 
 __all__ = [
+    "related_news",
     "search_news_by_ticker",
     "search_news",
     "search_news_by_keywords",
@@ -58,4 +60,18 @@ def stored_news(
         return []
     return [
         Article(**row.model_dump()) for row in stored_articles(store, offset, limit)
+    ]
+
+
+def related_news(
+    text: str, store: PostgresStore | None, limit: int = 10,
+) -> list[Article]:
+    embedder = OpenAICompatibleEmbedder.get()
+    if store is None or not embedder.enabled:
+        return []
+
+    [embedding] = embedder.embed([text])
+    return [
+        Article(**row.model_dump())
+        for row in related_articles(store, embedding, embedder.model, limit)
     ]

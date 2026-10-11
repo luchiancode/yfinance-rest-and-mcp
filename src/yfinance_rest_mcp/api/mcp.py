@@ -93,7 +93,7 @@ async def get_quotes(
 @handle_errors
 async def search_news(
     ctx: Context[MCPState, None],
-    query: Annotated[string(), Field(description="News search query")] = "business",
+    query: Annotated[string(max_length=1000), Field(description="News search query")] = "business",
     limit: Annotated[int_range(), Field(description="Maximum number of articles")] = 25,
 ) -> list[Article]:
     store = ctx.request_context.lifespan_context.store
@@ -111,7 +111,7 @@ async def search_news(
 @handle_errors
 async def search_news_by_keywords(
     ctx: Context[MCPState, None],
-    keywords: Annotated[list_of(string(), max_length=20), Field(description="News search keywords")],
+    keywords: Annotated[list_of(string(max_length=100), max_length=20), Field(description="News search keywords")],
     limit: Annotated[int_range(), Field(description="Maximum number of articles")] = 25,
 ) -> list[Article]:
     store = ctx.request_context.lifespan_context.store
