@@ -1,27 +1,27 @@
 from datetime import UTC, datetime, timedelta
 
-from .models import Article, InstrumentClass, InstrumentPage, TickerInfo
-from .db.repository import save_articles, save_instruments, save_price, stored_articles
+from .models import Article, InstrumentClass, InstrumentPage, Quote
+from .db.repository import save_articles, save_instruments, save_quote, stored_articles
 from .sources.instrument_source import InstrumentSource
+from .sources.quote_source import QuoteSource, TickerNotFoundError
 from .sources.search_news_source import SearchNewsSource
 from .sources.source import Source
-from .sources.ticker_info_source import TickerInfoSource, TickerNotFoundError
 from .sources.ticker_news_source import TickerNewsSource
 from .db.storage import PostgresStore
 
 __all__ = [
-    "PRICE_TTL",
+    "QUOTE_TTL",
     "TickerNotFoundError",
     "get_instruments",
-    "get_ticker_info",
+    "get_quote",
+    "get_quotes",
     "get_ticker_news",
-    "get_tickers_info",
     "search_news",
     "search_news_by_keywords",
     "stored_news",
 ]
 
-PRICE_TTL = timedelta(minutes=2)
+QUOTE_TTL = timedelta(minutes=2)
 
 
 def get_instruments(
@@ -40,11 +40,11 @@ def get_instruments(
     return page
 
 
-def get_ticker_info(
+def get_quote(
     symbol: str, store: PostgresStore | None = None,
-) -> TickerInfo:
+) -> Quote:
     now = datetime.now(UTC)
-    source: Source[TickerInfo] = TickerInfoSource(symbol, store, since=now - PRICE_TTL)
+    source: Source[Quote] = QuoteSource(symbol, store, since=now - QUOTE_TTL)
     result = source.get_from_db()
 
     if result is not None:
@@ -53,15 +53,15 @@ def get_ticker_info(
     result = source.get_from_yfinance()
 
     if store is not None:
-        save_price(store, result)
+        save_quote(store, result)
 
     return result
 
 
-def get_tickers_info(
+def get_quotes(
     symbols: list[str], store: PostgresStore | None = None,
-) -> dict[str, TickerInfo]:
-    return {symbol: get_ticker_info(symbol, store) for symbol in symbols}
+) -> dict[str, Quote]:
+    return {symbol: get_quote(symbol, store) for symbol in symbols}
 
 
 def get_ticker_news(

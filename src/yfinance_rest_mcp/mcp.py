@@ -11,11 +11,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.concurrency import run_in_threadpool
 from yfinance.exceptions import YFRateLimitError
 
-from .models import Article, TickerInfo
+from .models import Article, Quote
 from .service import (
     TickerNotFoundError,
+    get_quotes as _get_quotes,
     get_ticker_news as _get_ticker_news,
-    get_tickers_info,
     search_news as _search_news,
     search_news_by_keywords as _search_news_by_keywords,
 )
@@ -60,21 +60,25 @@ def handle_errors[**P, R](tool: Callable[P, Awaitable[R]]) -> Callable[P, Awaita
 
 @server.tool(
     description=(
-        "Get basic information for 1–20 known ticker symbols."
-        "Returns a symbol-keyed object with name, exchange, "
-        "currency, latest available price, and priceTime. "
+        "Get the latest regular-market quotes for 1–20 ticker symbols. "
+        "Returns a symbol-keyed object of quotes with fields: symbol, name, "
+        "exchange, currency, marketCap, fiftyDayAverage, twoHundredDayAverage. "
+        "day: regularMarketPrice, regularMarketTime, regularMarketChange, "
+        "regularMarketChangePercent, regularMarketVolume, regularMarketDayLow, "
+        "regularMarketDayHigh, regularMarketOpen, regularMarketPreviousClose. "
+        "52 week: fiftyTwoWeekLow, fiftyTwoWeekHigh."
     ),
     structured_output=True,
 )
 @handle_errors
-async def get_tickers(
+async def get_quotes(
     symbols: Annotated[list_of(TickerSymbol, max_length=20), Field(description="Ticker symbols")],
     ctx: Context[MCPState, None],
-) -> dict[str, TickerInfo]:
+) -> dict[str, Quote]:
     symbol_list = list(dict.fromkeys(symbol.upper() for symbol in symbols))
     store = ctx.request_context.lifespan_context.store
     try:
-        return await run_in_threadpool(get_tickers_info, symbol_list, store)
+        return await run_in_threadpool(_get_quotes, symbol_list, store)
     except TickerNotFoundError as exc:
         raise ToolError(f"No data found for ticker {exc}.") from exc
 

@@ -9,12 +9,12 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.concurrency import run_in_threadpool
 from yfinance.exceptions import YFRateLimitError
 
-from .models import Article, InstrumentClass, InstrumentPage, TickerInfo
+from .models import Article, InstrumentClass, InstrumentPage, Quote
 from .service import (
     TickerNotFoundError,
     get_instruments as _get_instruments,
+    get_quotes as _get_quotes,
     get_ticker_news as _get_ticker_news,
-    get_tickers_info,
     search_news as _search_news,
     search_news_by_keywords as _search_news_by_keywords,
     stored_news as _stored_news,
@@ -65,21 +65,21 @@ def upstream_error_handler(_request: Request, _exc: Exception) -> JSONResponse:
 
 @app.post(
     "/tickers",
-    summary="Get basic information for multiple tickers",
+    summary="Get quotes for multiple tickers",
     description=(
         "Accepts a JSON array of ticker symbols. Returns the latest available regular-market "
     ),
 )
-def get_tickers(
+def get_quotes(
     symbols: Annotated[
         list_of(TickerSymbol, max_length=20),
         Body(description="Ticker symbols", examples=[["MSFT", "AAPL", "GOOG"]]),
     ],
     store: StoreDep,
-) -> dict[str, TickerInfo]:
+) -> dict[str, Quote]:
     symbol_list = list(dict.fromkeys(symbol.upper() for symbol in symbols))
     try:
-        return get_tickers_info(symbol_list, store)
+        return _get_quotes(symbol_list, store)
     except TickerNotFoundError as exc:
         raise HTTPException(status_code=404, detail=f"No data found for ticker {exc}.") from exc
 
@@ -156,4 +156,4 @@ def get_ticker_news(
 
 
 def main() -> None:
-    uvicorn.run("yfinance_rest_mcp.api:app", host="127.0.0.1", port=8000)
+    uvicorn.run("yfinance_rest_mcp.api:app", host="127.0.0.1", port=5001)

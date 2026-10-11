@@ -21,16 +21,28 @@ class Instrument(SQLModel, table=True):
     )
 
 
-class PriceSnapshot(SQLModel, table=True):
-    __tablename__ = "price_snapshots"
+class QuoteSnapshot(SQLModel, table=True):
+    __tablename__ = "quote_snapshots"
 
     id: int | None = Field(default=None, primary_key=True)
     symbol: str = Field(index=True)
     name: str | None = None
     exchange: str | None = None
     currency: str | None = None
-    price: float | None = None
-    price_time: datetime | None = Field(default=None, sa_type=DateTime(timezone=True))
+    regular_market_price: float | None = None
+    regular_market_time: datetime | None = Field(default=None, sa_type=DateTime(timezone=True))
+    regular_market_change: float | None = None
+    regular_market_change_percent: float | None = None
+    regular_market_volume: int | None = None
+    regular_market_day_low: float | None = None
+    regular_market_day_high: float | None = None
+    regular_market_open: float | None = None
+    regular_market_previous_close: float | None = None
+    fifty_two_week_low: float | None = None
+    fifty_two_week_high: float | None = None
+    fifty_day_average: float | None = None
+    two_hundred_day_average: float | None = None
+    market_cap: int | None = None
     recorded_at: datetime = Field(
         default_factory=lambda: datetime.now(UTC), sa_type=DateTime(timezone=True),
     )

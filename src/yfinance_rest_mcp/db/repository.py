@@ -6,9 +6,9 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, select
 
 from ..embedder_adapter.openai_compatible_embedder import OpenAICompatibleEmbedder
-from ..models import Article, Instrument, TickerInfo
+from ..models import Article, Instrument, Quote
 from .storage import PostgresStore
-from .tables import Instrument as InstrumentTable, NewsArticle, PriceSnapshot
+from .tables import Instrument as InstrumentTable, NewsArticle, QuoteSnapshot
 
 
 def save_instruments(store: PostgresStore, items: Iterable[Instrument]) -> None:
@@ -51,19 +51,19 @@ def instruments_page(
     return list(rows), total
 
 
-def latest_price(store: PostgresStore, symbol: str, since: datetime) -> PriceSnapshot | None:
+def latest_quote(store: PostgresStore, symbol: str, since: datetime) -> QuoteSnapshot | None:
     with Session(store.engine) as session:
         return session.exec(
-            select(PriceSnapshot)
-            .where(PriceSnapshot.symbol == symbol, PriceSnapshot.recorded_at >= since)
-            .order_by(PriceSnapshot.id.desc())
+            select(QuoteSnapshot)
+            .where(QuoteSnapshot.symbol == symbol, QuoteSnapshot.recorded_at >= since)
+            .order_by(QuoteSnapshot.id.desc())
             .limit(1)
         ).first()
 
 
-def save_price(store: PostgresStore, record: TickerInfo) -> None:
+def save_quote(store: PostgresStore, record: Quote) -> None:
     with Session(store.engine) as session:
-        session.add(PriceSnapshot(**record.model_dump()))
+        session.add(QuoteSnapshot(**record.model_dump()))
         session.commit()
 
 

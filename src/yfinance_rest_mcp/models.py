@@ -8,19 +8,31 @@ class InstrumentClass(StrEnum):
     ETF = "ETF"
     MUTUALFUND = "MUTUALFUND"
 
-class TickerInfo(BaseModel):
+class Quote(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     symbol: str
     name: str | None = None
     exchange: str | None = None
     currency: str | None = None
-    price: float | None = None
-    price_time: datetime | None = Field(
+    regular_market_price: float | None = Field(default=None, alias="regularMarketPrice")
+    regular_market_time: datetime | None = Field(
         default=None,
-        alias="priceTime",
+        alias="regularMarketTime",
         description="UTC source timestamp for the regular-market price; null if unavailable.",
     )
+    regular_market_change: float | None = Field(default=None, alias="regularMarketChange")
+    regular_market_change_percent: float | None = Field(default=None, alias="regularMarketChangePercent")
+    regular_market_volume: int | None = Field(default=None, alias="regularMarketVolume")
+    regular_market_day_low: float | None = Field(default=None, alias="regularMarketDayLow")
+    regular_market_day_high: float | None = Field(default=None, alias="regularMarketDayHigh")
+    regular_market_open: float | None = Field(default=None, alias="regularMarketOpen")
+    regular_market_previous_close: float | None = Field(default=None, alias="regularMarketPreviousClose")
+    fifty_two_week_low: float | None = Field(default=None, alias="fiftyTwoWeekLow")
+    fifty_two_week_high: float | None = Field(default=None, alias="fiftyTwoWeekHigh")
+    fifty_day_average: float | None = Field(default=None, alias="fiftyDayAverage")
+    two_hundred_day_average: float | None = Field(default=None, alias="twoHundredDayAverage")
+    market_cap: int | None = Field(default=None, alias="marketCap")
 
 class Instrument(BaseModel):
     model_config = ConfigDict(populate_by_name=True)

@@ -5,7 +5,7 @@ from sqlalchemy import Engine, URL, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import SQLModel, create_engine
 
-from .tables import Instrument, NewsArticle, PriceSnapshot
+from .tables import Instrument, NewsArticle, QuoteSnapshot
 
 
 class PostgresStore:
@@ -47,7 +47,7 @@ def create_store() -> PostgresStore | None:
             connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         SQLModel.metadata.create_all(
             engine,
-            tables=[Instrument.__table__, PriceSnapshot.__table__, NewsArticle.__table__],
+            tables=[Instrument.__table__, QuoteSnapshot.__table__, NewsArticle.__table__],
         )
 
     except SQLAlchemyError:
