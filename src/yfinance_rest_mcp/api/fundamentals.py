@@ -2,11 +2,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, HTTPException, Query
 
-from .models import InstrumentClass, InstrumentPage, Quote
+from .models import InstrumentClass, InstrumentPage, Quote, Ratios
 from ..service.fundamentals import (
     TickerNotFoundError,
     get_instruments as _get_instruments,
     get_quotes as _get_quotes,
+    get_ratios as _get_ratios,
 )
 from .validation import TickerSymbol, int_range, list_of
 from .deps import StoreDep
@@ -31,6 +32,18 @@ def get_quotes(
     symbol_list = list(dict.fromkeys(symbol.upper() for symbol in symbols))
     try:
         return _get_quotes(symbol_list, store)
+    except TickerNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"No data found for ticker {exc}.") from exc
+
+
+@router.get(
+    "/ratios/{symbol}",
+    summary="Get financial ratios for a ticker",
+    description="Returns valuation, liquidity, leverage and profitability ratios for a ticker symbol.",
+)
+def get_ratios(symbol: TickerSymbol) -> Ratios:
+    try:
+        return _get_ratios(symbol.upper())
     except TickerNotFoundError as exc:
         raise HTTPException(status_code=404, detail=f"No data found for ticker {exc}.") from exc
 

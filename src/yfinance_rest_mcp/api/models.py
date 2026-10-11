@@ -34,6 +34,28 @@ class Quote(BaseModel):
     two_hundred_day_average: float | None = Field(default=None, alias="twoHundredDayAverage")
     market_cap: int | None = Field(default=None, alias="marketCap")
 
+class Ratios(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    symbol: str
+    current_price: float | None = Field(default=None, alias="currentPrice")
+    market_cap: int | None = Field(default=None, alias="marketCap")
+    enterprise_value: int | None = Field(default=None, alias="enterpriseValue")
+    average_volume: int | None = Field(default=None, alias="averageVolume")
+    current_ratio: float | None = Field(default=None, alias="currentRatio")
+    quick_ratio: float | None = Field(default=None, alias="quickRatio")
+    debt_to_equity: float | None = Field(default=None, alias="debtToEquity")
+    dividend_yield: float | None = Field(default=None, alias="dividendYield")
+    trailing_eps: float | None = Field(default=None, alias="trailingEps")
+    enterprise_to_ebitda: float | None = Field(default=None, alias="enterpriseToEbitda")
+    enterprise_to_revenue: float | None = Field(default=None, alias="enterpriseToRevenue")
+    free_cashflow: int | None = Field(default=None, alias="freeCashflow")
+    price_to_book: float | None = Field(default=None, alias="priceToBook")
+    trailing_pe: float | None = Field(default=None, alias="trailingPE")
+    price_to_sales_trailing_12_months: float | None = Field(default=None, alias="priceToSalesTrailing12Months")
+    return_on_assets: float | None = Field(default=None, alias="returnOnAssets")
+    return_on_equity: float | None = Field(default=None, alias="returnOnEquity")
+
 class Instrument(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 

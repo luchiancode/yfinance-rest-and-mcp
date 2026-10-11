@@ -1,10 +1,11 @@
 from datetime import UTC, datetime, timedelta
 
-from ..api.models import InstrumentClass, InstrumentPage, Quote
+from ..api.models import InstrumentClass, InstrumentPage, Quote, Ratios
 from ..db.fundamentals_repository import save_instruments, save_quote
 from ..db.storage import PostgresStore
 from ..sources.instrument_source import InstrumentSource
 from ..sources.quote_source import QuoteSource, TickerNotFoundError
+from ..sources.ratios_source import RatiosSource
 from ..sources.source import Source
 
 __all__ = [
@@ -13,6 +14,7 @@ __all__ = [
     "get_instruments",
     "get_quote",
     "get_quotes",
+    "get_ratios",
 ]
 
 QUOTE_TTL = timedelta(minutes=2)
@@ -57,3 +59,7 @@ def get_quotes(
     symbols: list[str], store: PostgresStore | None = None,
 ) -> dict[str, Quote]:
     return {symbol: get_quote(symbol, store) for symbol in symbols}
+
+
+def get_ratios(symbol: str) -> Ratios:
+    return RatiosSource(symbol).get_from_yfinance()
