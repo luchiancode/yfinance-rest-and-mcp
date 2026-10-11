@@ -1,7 +1,7 @@
 import yfinance as yf
 
-from ..models import Instrument, InstrumentClass, InstrumentPage
-from ..db.repository import instruments_page
+from ..api.models import Instrument, InstrumentClass, InstrumentPage
+from ..db.fundamentals_repository import instruments_page
 from ..db.storage import PostgresStore
 from .source import Source
 
@@ -25,12 +25,14 @@ class InstrumentSource(Source[InstrumentPage]):
         
         if len(rows) == self.limit or (rows and self.offset + len(rows) >= total):
             next_offset = self.offset + len(rows)
+
             return InstrumentPage(
                 items=[Instrument(**row.model_dump(exclude={"updated_at"})) for row in rows],
                 total=total,
                 offset=self.offset,
                 next_offset=next_offset if next_offset < total else None,
             )
+            
         return None
 
     def get_from_yfinance(self) -> InstrumentPage:

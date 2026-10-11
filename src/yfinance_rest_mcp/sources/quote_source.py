@@ -2,8 +2,8 @@ from datetime import UTC, datetime
 
 import yfinance as yf
 
-from ..models import Quote
-from ..db.repository import latest_quote
+from ..api.models import Quote
+from ..db.fundamentals_repository import latest_quote
 from ..db.storage import PostgresStore
 from .source import Source
 

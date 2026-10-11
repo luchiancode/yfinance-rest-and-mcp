@@ -22,11 +22,11 @@ dependencies = [
 ]
 
 [project.scripts]
-yfinance-rest = "yfinance_rest_mcp.api:main"
-yfinance-mcp = "yfinance_rest_mcp.mcp:main"
+yfinance-rest = "yfinance_rest_mcp.app:main"
+yfinance-mcp = "yfinance_rest_mcp.api.mcp:main"
 
 [tool.fastapi]
-entrypoint = "yfinance_rest_mcp.api:app"
+entrypoint = "yfinance_rest_mcp.app:app"
 
 [build-system]
 requires = ["uv_build>=0.12.5,<0.13.0"]

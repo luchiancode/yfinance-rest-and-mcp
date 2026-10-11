@@ -72,25 +72,22 @@ class OpenAICompatibleEmbedder(EmbedderAdapter):
         return embeddings
 
 
-    def embed_rows(self, rows: dict[str, dict], *keys: str) -> None:
-        if not self.enabled or not keys:
-            return
-
+    def embed_rows(self, rows: dict[str, dict], *keys: str) -> list[list[float] | None]:
         texts = [
             "\n".join(str(row[key]) for key in keys if row.get(key))
             for row in rows.values()
         ]
+
+        if not self.enabled or not keys:
+            return [None] * len(texts)
+
         try:
             vectors = self.embed([text for text in texts if text])
         except Exception:
-            return
+            return [None] * len(texts)
 
         vector_iter = iter(vectors)
-        for row, text in zip(rows.values(), texts, strict=True):
-            if not text:
-                continue
-            row["embedding"] = next(vector_iter)
-            row["embedding_model"] = self.model
+        return [next(vector_iter) if text else None for text in texts]
 
     def split_text(self, text: str) -> list[str]:
         encoding = self._tokenizer.encode(text, add_special_tokens=False)
@@ -106,6 +103,7 @@ class OpenAICompatibleEmbedder(EmbedderAdapter):
             if end > start:
                 chunks.append(text[start:end])
                 start = end
+                
         chunks.append(text[start:])
 
         return chunks

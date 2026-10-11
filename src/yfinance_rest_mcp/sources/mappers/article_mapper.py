@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from datetime import UTC, datetime
 
-from ...models import Article
+from ...api.models import Article
 from .mapper import Mapper
 
 
@@ -18,29 +18,17 @@ class ArticleMapper(Mapper[dict, Article]):
 
         thumbnail = content.get("thumbnail") or {}
         image = thumbnail.get("originalUrl")
+        
         if image is None:
             resolutions = thumbnail.get("resolutions") or []
             if resolutions:
                 image = resolutions[-1].get("url")
 
-        published_at = None
-        pub_date = content.get("pubDate")
-
-        if isinstance(pub_date, str) and pub_date:
-            try:
-                published_at = datetime.fromisoformat(
-                    pub_date[:-1] + "+00:00" if pub_date.endswith("Z") else pub_date
-                )
-            except ValueError:
-                published_at = None
-
-        if published_at is None:
-            timestamp = item.get("providerPublishTime")
-            if timestamp is not None:
-                try:
-                    published_at = datetime.fromtimestamp(timestamp, UTC)
-                except (TypeError, ValueError, OSError):
-                    published_at = None
+        timestamp = item.get("providerPublishTime")
+        published_at = (
+            datetime.fromtimestamp(timestamp, UTC)
+            if isinstance(timestamp, int | float) else None
+        )
 
         provider = content.get("provider") or {}
 

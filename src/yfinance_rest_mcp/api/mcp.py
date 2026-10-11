@@ -12,14 +12,13 @@ from starlette.concurrency import run_in_threadpool
 from yfinance.exceptions import YFRateLimitError
 
 from .models import Article, Quote
-from .service import (
-    TickerNotFoundError,
-    get_quotes as _get_quotes,
-    get_ticker_news as _get_ticker_news,
+from ..service.fundamentals import TickerNotFoundError, get_quotes as _get_quotes
+from ..service.news import (
+    search_news_by_ticker as _search_news_by_ticker,
     search_news as _search_news,
     search_news_by_keywords as _search_news_by_keywords,
 )
-from .db.storage import PostgresStore, create_store
+from ..db.storage import PostgresStore, create_store
 from .validation import TickerSymbol, int_range, list_of, string
 
 
@@ -63,10 +62,9 @@ def handle_errors[**P, R](tool: Callable[P, Awaitable[R]]) -> Callable[P, Awaita
         "Get the latest regular-market quotes for 1–20 ticker symbols. "
         "Returns a symbol-keyed object of quotes with fields: symbol, name, "
         "exchange, currency, marketCap, fiftyDayAverage, twoHundredDayAverage. "
-        "day: regularMarketPrice, regularMarketTime, regularMarketChange, "
-        "regularMarketChangePercent, regularMarketVolume, regularMarketDayLow, "
-        "regularMarketDayHigh, regularMarketOpen, regularMarketPreviousClose. "
-        "52 week: fiftyTwoWeekLow, fiftyTwoWeekHigh."
+        "day market: price, time, change, changePercent, volume, dayLow, "
+        "dayHigh, open, previousClose. "
+        "52 week: low, high."
     ),
     structured_output=True,
 )
@@ -128,13 +126,13 @@ async def search_news_by_keywords(
     structured_output=True,
 )
 @handle_errors
-async def get_ticker_news(
+async def search_news_by_ticker(
     symbol: TickerSymbol,
     ctx: Context[MCPState, None],
     limit: Annotated[int_range(), Field(description="Maximum number of articles")] = 10,
 ) -> list[Article]:
     store = ctx.request_context.lifespan_context.store
-    return await run_in_threadpool(_get_ticker_news, symbol.upper(), limit=limit, store=store)
+    return await run_in_threadpool(_search_news_by_ticker, symbol.upper(), limit=limit, store=store)
 
 
 def main() -> None:
