@@ -35,7 +35,6 @@ class ArticleMapper(Mapper[dict, Article]):
         return Article(
             external_id=content.get("id") or item.get("uuid"),
             title=title,
-            description=content.get("summary"),
             url=url,
             image=image,
             published_at=published_at,

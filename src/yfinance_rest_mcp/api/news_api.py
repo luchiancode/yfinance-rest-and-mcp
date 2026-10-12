@@ -68,6 +68,7 @@ def get_related_news(
     return _related_news(text, store, limit=limit)
 
 
+# Does not work
 @router.get(
     "/tickers/{symbol}/news",
     summary="Get news articles for a ticker",

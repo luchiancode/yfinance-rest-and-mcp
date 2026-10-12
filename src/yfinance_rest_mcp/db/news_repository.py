@@ -37,7 +37,7 @@ def save_articles(store: PostgresStore, articles: Iterable[Article]) -> None:
         return
 
     embedder = OpenAICompatibleEmbedder.get()
-    vectors = embedder.embed_rows(rows, "title", "description")
+    vectors = embedder.embed_rows(rows, "title")
     for row, vector in zip(rows.values(), vectors, strict=True):
         if vector is not None:
             row["embedding"] = vector

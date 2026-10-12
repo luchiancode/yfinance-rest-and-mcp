@@ -8,7 +8,6 @@ class Article(BaseModel):
 
     external_id: str | None = Field(default=None, alias="externalId")
     title: str | None = None
-    description: str | None = None
     content: str | None = None
     url: str | None = None
     image: str | None = None

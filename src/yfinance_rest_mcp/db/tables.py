@@ -63,7 +63,6 @@ class NewsArticle(SQLModel, table=True):
 
     external_id: str = Field(primary_key=True)
     title: str | None = None
-    description: str | None = None
     url: str | None = None
     image: str | None = None
     published_at: datetime | None = Field(default=None, sa_type=DateTime(timezone=True))

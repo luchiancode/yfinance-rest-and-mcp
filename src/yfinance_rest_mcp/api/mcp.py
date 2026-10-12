@@ -85,7 +85,7 @@ async def get_quotes(
 @server.tool(
     description=(
         "Search news articles acrossy. "
-        "Returns a list of articles with id, title, description, "
+        "Returns a list of articles with id, title, "
         "url, image, publishedAt, and source."
     ),
     structured_output=True,
@@ -103,7 +103,7 @@ async def search_news(
 @server.tool(
     description=(
         "Searches news articles for each keyword."
-        "Returns a list of articles with id, title, description, "
+        "Returns a list of articles with id, title, "
         "url, image, publishedAt, and source."
     ),
     structured_output=True,
@@ -121,7 +121,7 @@ async def search_news_by_keywords(
 @server.tool(
     description=(
         "Get the latest news articles for a ticker symbol. "
-        "Returns a list of articles with id, title, description, "
+        "Returns a list of articles with id, title, "
         "url, image, publishedAt, and source."
     ),
     structured_output=True,
