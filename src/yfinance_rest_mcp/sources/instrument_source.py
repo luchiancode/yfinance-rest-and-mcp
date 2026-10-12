@@ -1,7 +1,7 @@
 import yfinance as yf
 
 from ..api.models.fundamentals_models import Instrument, InstrumentClass, InstrumentPage
-from ..db.fundamentals_repository import instruments_page
+from ..db.fundamentals_repository import get_instruments_page
 from ..db.storage import PostgresStore
 from .source import Source
 
@@ -21,7 +21,7 @@ class InstrumentSource(Source[InstrumentPage]):
         if self.store is None:
             return None
 
-        rows, total = instruments_page(self.store, self.asset_class.value, self.offset, self.limit)
+        rows, total = get_instruments_page(self.store, self.asset_class.value, self.offset, self.limit)
         
         if len(rows) == self.limit or (rows and self.offset + len(rows) >= total):
             next_offset = self.offset + len(rows)

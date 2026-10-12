@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
 from ..api.models.fundamentals_models import InstrumentClass, InstrumentPage, Quote, Ratios
-from ..db.fundamentals_repository import save_instruments, save_quote
+from ..db.fundamentals_repository import save_instruments, save_quote, save_ratio
 from ..db.storage import PostgresStore
 from ..sources.instrument_source import InstrumentSource
 from ..sources.quote_source import QuoteSource, TickerNotFoundError
@@ -9,7 +9,7 @@ from ..sources.ratios_source import RatiosSource
 from ..sources.source import Source
 
 __all__ = [
-    "QUOTE_TTL",
+    "SNAPSHOT_TTL",
     "TickerNotFoundError",
     "get_instruments",
     "get_quote",
@@ -17,7 +17,7 @@ __all__ = [
     "get_ratios",
 ]
 
-QUOTE_TTL = timedelta(minutes=2)
+SNAPSHOT_TTL = timedelta(minutes=2)
 
 
 def get_instruments(
@@ -41,7 +41,7 @@ def get_quote(
     symbol: str, store: PostgresStore | None = None,
 ) -> Quote:
     now = datetime.now(UTC)
-    source: Source[Quote] = QuoteSource(symbol, store, since=now - QUOTE_TTL)
+    source: Source[Quote] = QuoteSource(symbol, store, since=now - SNAPSHOT_TTL)
     result = source.get_from_db()
 
     if result is not None:
@@ -61,5 +61,19 @@ def get_quotes(
     return {symbol: get_quote(symbol, store) for symbol in symbols}
 
 
-def get_ratios(symbol: str) -> Ratios:
-    return RatiosSource(symbol).get_from_yfinance()
+def get_ratios(
+    symbol: str, store: PostgresStore | None = None,
+) -> Ratios:
+    now = datetime.now(UTC)
+    source: Source[Ratios] = RatiosSource(symbol, store, since=now - SNAPSHOT_TTL)
+    result = source.get_from_db()
+
+    if result is not None:
+        return result
+
+    result = source.get_from_yfinance()
+
+    if store is not None:
+        save_ratio(store, result)
+
+    return result

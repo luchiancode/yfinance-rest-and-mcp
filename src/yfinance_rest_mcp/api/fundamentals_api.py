@@ -41,9 +41,9 @@ def get_quotes(
     summary="Get financial ratios for a ticker",
     description="Returns valuation, liquidity, leverage and profitability ratios for a ticker symbol.",
 )
-def get_ratios(symbol: TickerSymbol) -> Ratios:
+def get_ratios(symbol: TickerSymbol, store: StoreDep) -> Ratios:
     try:
-        return _get_ratios(symbol.upper())
+        return _get_ratios(symbol.upper(), store)
     except TickerNotFoundError as exc:
         raise HTTPException(status_code=404, detail=f"No data found for ticker {exc}.") from exc
 

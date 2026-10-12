@@ -5,9 +5,9 @@ from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, select
 
-from ..api.models.fundamentals_models import Instrument, Quote
+from ..api.models.fundamentals_models import Instrument, Quote, Ratios
 from .storage import PostgresStore
-from .tables import Instrument as InstrumentTable, QuoteSnapshot
+from .tables import Instrument as InstrumentTable, QuoteSnapshot, RatioSnapshot
 
 
 def save_instruments(store: PostgresStore, items: Iterable[Instrument]) -> None:
@@ -32,7 +32,7 @@ def save_instruments(store: PostgresStore, items: Iterable[Instrument]) -> None:
         session.commit()
 
 
-def instruments_page(
+def get_instruments_page(
     store: PostgresStore, asset_class: str, offset: int, limit: int,
 ) -> tuple[list[InstrumentTable], int]:
     with Session(store.engine) as session:
@@ -52,7 +52,7 @@ def instruments_page(
     return list(rows), total
 
 
-def latest_quote(store: PostgresStore, symbol: str, since: datetime) -> QuoteSnapshot | None:
+def get_quote(store: PostgresStore, symbol: str, since: datetime) -> QuoteSnapshot | None:
     with Session(store.engine) as session:
         return session.exec(
             select(QuoteSnapshot)
@@ -65,4 +65,20 @@ def latest_quote(store: PostgresStore, symbol: str, since: datetime) -> QuoteSna
 def save_quote(store: PostgresStore, record: Quote) -> None:
     with Session(store.engine) as session:
         session.add(QuoteSnapshot(**record.model_dump()))
+        session.commit()
+
+
+def get_ratio(store: PostgresStore, symbol: str, since: datetime) -> RatioSnapshot | None:
+    with Session(store.engine) as session:
+        return session.exec(
+            select(RatioSnapshot)
+            .where(RatioSnapshot.symbol == symbol, RatioSnapshot.recorded_at >= since)
+            .order_by(RatioSnapshot.id.desc())
+            .limit(1)
+        ).first()
+
+
+def save_ratio(store: PostgresStore, record: Ratios) -> None:
+    with Session(store.engine) as session:
+        session.add(RatioSnapshot(**record.model_dump()))
         session.commit()

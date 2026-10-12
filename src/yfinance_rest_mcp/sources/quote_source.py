@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 import yfinance as yf
 
 from ..api.models.fundamentals_models import Quote
-from ..db.fundamentals_repository import latest_quote
+from ..db.fundamentals_repository import get_quote
 from ..db.storage import PostgresStore
 from .source import Source
 
@@ -26,7 +26,7 @@ class QuoteSource(Source[Quote]):
         if self.store is None:
             return None
 
-        row = latest_quote(self.store, self.symbol, since=self.since)
+        row = get_quote(self.store, self.symbol, since=self.since)
 
         if row is None:
             return None
