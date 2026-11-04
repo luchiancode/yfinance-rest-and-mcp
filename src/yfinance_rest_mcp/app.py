@@ -8,6 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.concurrency import run_in_threadpool
 from yfinance.exceptions import YFRateLimitError
 
+from .api.decisions_api import router as decisions_router
 from .api.fundamentals_api import router as fundamentals_router
 from .api.handlers import persistence_error_handler, rate_limit_handler, upstream_error_handler
 from .api.news_api import router as news_router
@@ -33,6 +34,7 @@ app = FastAPI(
 
 app.include_router(fundamentals_router)
 app.include_router(news_router)
+app.include_router(decisions_router)
 
 app.add_exception_handler(YFRateLimitError, rate_limit_handler)
 app.add_exception_handler(SQLAlchemyError, persistence_error_handler)

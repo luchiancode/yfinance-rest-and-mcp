@@ -15,8 +15,8 @@ class TypeSafeDecider(DecisionModelAdapter):
         self._client = (
             TypeSafeClient(
                 model=self.model,
-                base_url=os.getenv("TYPESAFE_BASE_URL", "http://127.0.0.1:8008"),
-                api_key=os.getenv("TYPESAFE_API_KEY") or "local",
+                base_url=os.getenv("TYPESAFE_BASE_URL", "http://127.0.0.1:8888"),
+                api_key=os.getenv("TYPESAFE_API_KEY"),
             )
 
             if self.enabled
