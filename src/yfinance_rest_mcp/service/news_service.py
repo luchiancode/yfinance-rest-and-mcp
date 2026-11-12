@@ -4,6 +4,7 @@ from ..db.storage import PostgresStore
 from ..embedder_adapter.openai_compatible_embedder import OpenAICompatibleEmbedder
 from ..sources.search_news_source import SearchNewsSource
 from ..sources.ticker_news_source import TickerNewsSource
+from ..reranker_adapter.reranker import Reranker
 
 __all__ = [
     "related_news",
@@ -71,7 +72,19 @@ def related_news(
         return []
 
     [embedding] = embedder.embed([text])
-    return [
+
+    reranker = Reranker()
+    candidate_limit = min(500, max(50, limit * 5)) if reranker.enabled else limit
+    
+    articles = [
         Article(**row.model_dump())
-        for row in related_articles(store, embedding, embedder.model, limit)
+        for row in related_articles(
+            store, embedding, embedder.model, candidate_limit,
+        )
     ]
+
+    if not reranker.enabled or not articles:
+        return articles
+    
+    documents = ["\n".join(filter(None, [article.title, article.content])) for article in articles]
+    return [articles[index] for index in reranker.rerank(text, documents, limit)]

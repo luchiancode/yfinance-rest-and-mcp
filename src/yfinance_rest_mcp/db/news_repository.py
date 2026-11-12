@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from datetime import UTC, datetime
+import os
 
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert
@@ -54,19 +55,25 @@ def save_articles(store: PostgresStore, articles: Iterable[Article]) -> None:
 def related_articles(
     store: PostgresStore, embedding: list[float], embedding_model: str, limit: int,
 ) -> list[NewsArticle]:
+    
+    max_distance = float(os.getenv("EMBEDDING_MAX_COSINE_DISTANCE", "0.4"))
+    if not 0 <= max_distance <= 2:
+        raise ValueError("EMBEDDING_MAX_COSINE_DISTANCE must be between 0 and 2")
+    
     with Session(store.engine) as session:
         session.execute(select(func.set_config("hnsw.ef_search", str(max(limit, 40)), True)))
         distance = NewsArticle.embedding.cosine_distance(embedding)
-        return list(session.exec(
+        statement = (
             select(NewsArticle)
             .where(
                 NewsArticle.embedding.is_not(None),
                 NewsArticle.embedding_model == embedding_model,
-                distance <= 0.2,
+                distance <= max_distance,
             )
             .order_by(distance)
             .limit(limit)
-        ).all())
+        )
+        return list(session.exec(statement).all())
 
 
 def stored_articles(store: PostgresStore, offset: int, limit: int) -> list[NewsArticle]:

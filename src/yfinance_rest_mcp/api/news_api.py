@@ -58,14 +58,14 @@ def get_stored_news(
 @router.post(
     "/news/related",
     summary="Get related news articles",
-    description="Embeds the given text and returns stored articles ordered by semantic similarity. "
+    description="Embeds the given query and returns stored articles ordered by semantic similarity. "
 )
 def get_related_news(
     store: StoreDep,
-    text: Annotated[string(max_length=10_000), Body(embed=True, description="Text to find related articles")],
+    query: Annotated[string(max_length=10_000), Body(embed=True, description="Query to find related articles")],
     limit: Annotated[int_range(), Query(description="Maximum number of articles")] = 10,
 ) -> list[Article]:
-    return _related_news(text, store, limit=limit)
+    return _related_news(query, store, limit=limit)
 
 
 # Does not work

@@ -15,7 +15,7 @@ class OpenAICompatibleEmbedder(EmbedderAdapter):
 
     def __init__(self) -> None:
         self.model = os.getenv("EMBEDDING_MODEL") or ""
-        self._base_url = os.getenv("OPENAI_BASE_URL", "http://localhost:1234/v1")
+        self._base_url = os.getenv("OPENAI_BASE_URL", "http://localhost:8888/v1")
 
         tokenizer_path = Path(__file__).resolve().parent.parent / "tokenizers" / "embeddinggemma-2-tokenizer.json"
         
